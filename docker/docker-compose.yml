@@ -1,0 +1,41 @@
+version: '1.0'
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    volumes:
+      - ~/.localstorage:/root/.localstorage
+    ports:
+      - "8002:8002"
+    env_file:
+      - ../api/servedb/.env
+    network_mode: "host"
+    restart: always
+      
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    volumes:
+      - ~/.siteAnalyticsStorage:/root/.siteAnalyticsStorage
+    env_file:
+      - ./database/ionretrievalparser/.env
+    network_mode: "host"
+    restart: always
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../frontend/.env:/app/.env.production
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://api:8002
+    depends_on:
+      - api
+    restart: unless-stopped
